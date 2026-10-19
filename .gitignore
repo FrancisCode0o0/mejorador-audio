@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Training data and outputs live on the WD drive, never in the repo
+datos/
+*.npy
+*.pt
+*.wav
+*.flac
+
+# Editors / OS
+.vscode/
+Thumbs.db
+.DS_Store

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mejorador de audio</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; }
+    code { background: #eee; padding: 0 .3em; }
+  </style>
+</head>
+<body>
+  <h1>Hola</h1>
+  <p>Mejorador de audio · v0.0 (Fase 0)</p>
+  <p id="check">Comprobando JavaScript…</p>
+  <script>
+    // Minimal check: JS runs and the Web Audio API exists in this browser.
+    const ok = typeof (window.AudioContext || window.webkitAudioContext) === "function";
+    document.getElementById("check").textContent =
+      "JavaScript OK · Web Audio API: " + (ok ? "disponible" : "NO disponible");
+  </script>
+</body>
+</html>
