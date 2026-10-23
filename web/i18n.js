@@ -10,6 +10,7 @@ const TEXTS = {
     "page.heading": "Mejorador de audio",
     "file.label": "Elige un archivo de audio",
     "file.decoding": "Decodificando…",
+    "processed.heading": "Procesado",
     "info.name": "Nombre",
     "info.duration": "Duración",
     "info.channels": "Canales",
@@ -18,6 +19,7 @@ const TEXTS = {
     "unit.hertz": "Hz",
     "error.noAudioContext": "Este navegador no permite procesar audio (falta Web Audio).",
     "error.readFailed": "No se pudo leer el archivo.",
+    "error.resampleFailed": "No se pudo convertir el audio a 48 kHz.",
     "error.decodeFailed": "No se pudo decodificar el archivo. Prueba con otro formato (WAV, MP3, M4A).",
   },
 };

@@ -52,6 +52,9 @@ or `ui`.
 | `web/ui/app.js` | ui | Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. |
 | `web/i18n.js` | ui (texts) | Spanish texts and `t(key)`. |
 | `web/io/decode.js` | io | `decodeAudioFile(file)`: reads the File and decodes it with `AudioContext.decodeAudioData`; rejects with an Error carrying a `code`. |
+| `web/dsp/mono.js` | dsp | `mixToMono(channels)`: averages N channels into one new Float32Array. |
+| `web/io/resample.js` | io | `resampleTo48k(samples, rate)`: renders mono samples at 48 kHz in an OfflineAudioContext; returns them unchanged if already 48 kHz. |
+| `tests/dsp/mono.test.js` | tests | node:test tests for `mixToMono` (stereo average, copy not alias, length, N channels, errors). |
 | `docs/style.md` | docs | Code style rules. |
 | `docs/arquitectura.md` | docs | This file. |
 | `AGENTS.md` | repo | Rules for the jcode agent. |
