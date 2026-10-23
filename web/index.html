@@ -1,23 +1,30 @@
 <!doctype html>
+<!--
+  index.html — the app page: a file input and the summary of the decoded file.
+  Plan step: F1.1 (choose a file and show what the browser decoded).
+  Contains no visible text; ui/app.js fills it in from i18n.js.
+-->
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mejorador de audio</title>
+  <title></title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 3rem auto; padding: 0 1rem; }
-    code { background: #eee; padding: 0 .3em; }
+    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1rem; }
+    h1 { font-size: 1.4rem; }
+    #file-label { display: block; margin-bottom: .5rem; }
+    #file-input { width: 100%; font-size: 1rem; }
+    dt { font-weight: bold; margin-top: .75rem; }
+    dd { margin: 0; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
-  <h1>Hola</h1>
-  <p>Mejorador de audio · v0.0 (Fase 0)</p>
-  <p id="check">Comprobando JavaScript…</p>
-  <script>
-    // Minimal check: JS runs and the Web Audio API exists in this browser.
-    const ok = typeof (window.AudioContext || window.webkitAudioContext) === "function";
-    document.getElementById("check").textContent =
-      "JavaScript OK · Web Audio API: " + (ok ? "disponible" : "NO disponible");
-  </script>
+  <!-- All visible texts are set from i18n.js by ui/app.js. -->
+  <h1 id="heading"></h1>
+  <label id="file-label" for="file-input"></label>
+  <input id="file-input" type="file" accept="audio/*">
+  <p id="status" role="status"></p>
+  <dl id="summary"></dl>
+  <script type="module" src="ui/app.js"></script>
 </body>
 </html>
