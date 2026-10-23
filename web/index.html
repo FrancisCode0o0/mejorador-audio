@@ -1,8 +1,9 @@
 <!doctype html>
 <!--
-  index.html — the app page: file input, summaries, waveform and playback buttons.
+  index.html — the app page: file input, summaries, waveform, position bar and playback buttons.
   Plan step: F1.1 (choose a file and show what the browser decoded); extended
-  in F1.2 (processed summary), F1.3 (waveform) and F1.4 (A/B playback).
+  in F1.2 (processed summary), F1.3 (waveform), F1.4 (A/B playback) and
+  F1.4b (shared position bar, pause and stop).
   Contains no visible text; ui/app.js fills it in from i18n.js.
 -->
 <html lang="es">
@@ -23,6 +24,8 @@
       margin-top: 1rem;
     }
     #waveform[hidden] { display: none; }
+    #position { display: block; width: 100%; min-height: 2.75rem; margin: .5rem 0 0; }
+    #position-time { display: block; text-align: center; font-variant-numeric: tabular-nums; }
     #player { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
     #player button { flex: 1 1 8rem; min-height: 2.75rem; font-size: 1rem; }
     #player button[aria-pressed="true"] { font-weight: bold; outline: 3px solid #1a73e8; }
@@ -42,9 +45,12 @@
   <h2 id="processed-heading" hidden></h2>
   <dl id="processed"></dl>
   <canvas id="waveform" role="img" hidden></canvas>
+  <input id="position" type="range" min="0" max="0" step="0.01" value="0" disabled>
+  <span id="position-time"></span>
   <div id="player">
     <button id="play-original" type="button" aria-pressed="false" disabled></button>
     <button id="play-processed" type="button" aria-pressed="false" disabled></button>
+    <button id="pause" type="button" disabled></button>
     <button id="stop" type="button" disabled></button>
   </div>
   <script type="module" src="ui/app.js"></script>

@@ -48,12 +48,13 @@ or `ui`.
 
 | File | Layer | What it does |
 | --- | --- | --- |
-| `web/index.html` | ui | One-column page with a file input; loads `ui/app.js` as a module. Contains no visible text. |
-| `web/ui/app.js` | ui | Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. |
+| `web/index.html` | ui | One-column page: file input, summaries, waveform, a position range with its time text, and the buttons (play original, play processed, pause, stop); loads `ui/app.js` as a module. Contains no visible text. |
+| `web/ui/app.js` | ui | Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. Plays original or processed with one shared position (an A/B switch continues at the same moment): the range and time text follow playback and can be dragged to seek; "Pausa" stops and keeps the position, "Parar" stops and returns to 0. |
 | `web/i18n.js` | ui (texts) | Spanish texts and `t(key)`. |
 | `web/io/decode.js` | io | `decodeAudioFile(file)`: reads the File and decodes it with `decodeAudioData` on the shared context; rejects with an Error carrying a `code`. |
 | `web/io/audio-context.js` | io | `getAudioContext()`: the one shared AudioContext; created and resumed synchronously inside a user gesture (iOS). |
-| `web/io/playback.js` | io | `playSamples` / `stopPlayback`: plays mono samples through the shared context, one sound at a time. |
+| `web/io/playback.js` | io | `playSamples(samples, rate, onEnded, startSeconds)` / `stopPlayback` / `getPlaybackPositionSeconds`: plays mono samples through the shared context from a start position, one sound at a time; `onEnded` gets `"ended"` or `"stopped"`. The pure helpers `resolveStartSeconds` and `computePlaybackPositionSeconds` are exported for tests. |
+| `tests/io/playback.test.js` | tests | node:test tests for `resolveStartSeconds` and `computePlaybackPositionSeconds` (position maths, clamping, clock lag, out-of-range start). |
 | `web/dsp/pipeline.js` | dsp | `processSignal`: the only place that chains the dsp links; no links yet, returns a copy. |
 | `tests/dsp/pipeline.test.js` | tests | node:test tests for `processSignal` (equal output, new object). |
 | `web/dsp/mono.js` | dsp | `mixToMono(channels)`: averages N channels into one new Float32Array. |
