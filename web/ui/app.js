@@ -5,6 +5,7 @@
 import { decodeAudioFile, DECODE_ERROR_CODES } from "../io/decode.js";
 import { resampleTo48k, RESAMPLE_ERROR_CODES, TARGET_SAMPLE_RATE_HZ } from "../io/resample.js";
 import { mixToMono } from "../dsp/mono.js";
+import { drawWaveform } from "./waveform.js";
 import { t } from "../i18n.js";
 
 const DURATION_DECIMALS = 2;
@@ -30,6 +31,7 @@ const statusMessage = document.getElementById("status");
 const summaryList = document.getElementById("summary");
 const processedHeading = document.getElementById("processed-heading");
 const processedList = document.getElementById("processed");
+const waveformCanvas = document.getElementById("waveform");
 
 // The mono 48 kHz signal that later links will process. The AudioBuffer is
 // not kept: it holds every channel at the source rate and is not needed again.
@@ -39,7 +41,9 @@ document.title = t("page.title");
 document.getElementById("heading").textContent = t("page.heading");
 fileLabel.textContent = t("file.label");
 processedHeading.textContent = t("processed.heading");
+waveformCanvas.setAttribute("aria-label", t("waveform.label"));
 fileInput.addEventListener("change", onFileChosen);
+window.addEventListener("resize", redrawWaveform);
 
 function onFileChosen() {
   const file = fileInput.files[0];
@@ -75,6 +79,13 @@ async function processFile(file, decoding, choiceNumber) {
     ["info.sampleRate", formatHertz(TARGET_SAMPLE_RATE_HZ)],
     ["info.duration", formatDuration(samples.length / TARGET_SAMPLE_RATE_HZ)],
   ]);
+  // Unhide first: a hidden canvas has zero width, so nothing could be drawn.
+  waveformCanvas.hidden = false;
+  redrawWaveform();
+}
+
+function redrawWaveform() {
+  if (monoSamples48k) drawWaveform(waveformCanvas, monoSamples48k);
 }
 
 function getChannels(audioBuffer) {
@@ -114,4 +125,6 @@ function clearResult() {
   processedHeading.hidden = true;
   summaryList.replaceChildren();
   processedList.replaceChildren();
+  waveformCanvas.getContext("2d").clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+  waveformCanvas.hidden = true;
 }

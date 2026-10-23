@@ -11,6 +11,7 @@ const TEXTS = {
     "file.label": "Elige un archivo de audio",
     "file.decoding": "Decodificando…",
     "processed.heading": "Procesado",
+    "waveform.label": "Forma de onda del audio procesado",
     "info.name": "Nombre",
     "info.duration": "Duración",
     "info.channels": "Canales",
