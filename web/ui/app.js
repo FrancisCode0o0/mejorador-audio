@@ -8,7 +8,12 @@ import { decodeAudioFile, DECODE_ERROR_CODES } from "../io/decode.js";
 import { resampleTo48k, RESAMPLE_ERROR_CODES, TARGET_SAMPLE_RATE_HZ } from "../io/resample.js";
 import { mixToMono } from "../dsp/mono.js";
 import { processSignal } from "../dsp/pipeline.js";
-import { playSamples, stopPlayback, getPlaybackPositionSeconds, END_REASONS } from "../io/playback.js";
+import {
+  playSamples,
+  stopPlayback,
+  getPlaybackPositionSeconds,
+  END_REASONS,
+} from "../io/playback.js";
 import { drawWaveform } from "./waveform.js";
 import { t } from "../i18n.js";
 

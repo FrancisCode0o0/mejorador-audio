@@ -7,52 +7,96 @@
   Contains no visible text; ui/app.js fills it in from i18n.js.
 -->
 <html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1rem; }
-    h1 { font-size: 1.4rem; }
-    h2 { font-size: 1.15rem; }
-    #waveform {
-      --waveform-color: #1a73e8;
-      --waveform-background: #f1f3f4;
-      display: block;
-      width: 100%;
-      height: 120px;
-      margin-top: 1rem;
-    }
-    #waveform[hidden] { display: none; }
-    #position { display: block; width: 100%; min-height: 2.75rem; margin: .5rem 0 0; }
-    #position-time { display: block; text-align: center; font-variant-numeric: tabular-nums; }
-    #player { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
-    #player button { flex: 1 1 8rem; min-height: 2.75rem; font-size: 1rem; }
-    #player button[aria-pressed="true"] { font-weight: bold; outline: 3px solid #1a73e8; }
-    #file-label { display: block; margin-bottom: .5rem; }
-    #file-input { width: 100%; font-size: 1rem; }
-    dt { font-weight: bold; margin-top: .75rem; }
-    dd { margin: 0; overflow-wrap: anywhere; }
-  </style>
-</head>
-<body>
-  <!-- All visible texts are set from i18n.js by ui/app.js. -->
-  <h1 id="heading"></h1>
-  <label id="file-label" for="file-input"></label>
-  <input id="file-input" type="file" accept="audio/*">
-  <p id="status" role="status"></p>
-  <dl id="summary"></dl>
-  <h2 id="processed-heading" hidden></h2>
-  <dl id="processed"></dl>
-  <canvas id="waveform" role="img" hidden></canvas>
-  <input id="position" type="range" min="0" max="0" step="0.01" value="0" disabled>
-  <span id="position-time"></span>
-  <div id="player">
-    <button id="play-original" type="button" aria-pressed="false" disabled></button>
-    <button id="play-processed" type="button" aria-pressed="false" disabled></button>
-    <button id="pause" type="button" disabled></button>
-    <button id="stop" type="button" disabled></button>
-  </div>
-  <script type="module" src="ui/app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title></title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 40rem;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      h2 {
+        font-size: 1.15rem;
+      }
+      #waveform {
+        --waveform-color: #1a73e8;
+        --waveform-background: #f1f3f4;
+        display: block;
+        width: 100%;
+        height: 120px;
+        margin-top: 1rem;
+      }
+      #waveform[hidden] {
+        display: none;
+      }
+      #position {
+        display: block;
+        width: 100%;
+        min-height: 2.75rem;
+        margin: 0.5rem 0 0;
+      }
+      #position-time {
+        display: block;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+      #player {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+      #player button {
+        flex: 1 1 8rem;
+        min-height: 2.75rem;
+        font-size: 1rem;
+      }
+      #player button[aria-pressed="true"] {
+        font-weight: bold;
+        outline: 3px solid #1a73e8;
+      }
+      #file-label {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      #file-input {
+        width: 100%;
+        font-size: 1rem;
+      }
+      dt {
+        font-weight: bold;
+        margin-top: 0.75rem;
+      }
+      dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- All visible texts are set from i18n.js by ui/app.js. -->
+    <h1 id="heading"></h1>
+    <label id="file-label" for="file-input"></label>
+    <input id="file-input" type="file" accept="audio/*" />
+    <p id="status" role="status"></p>
+    <dl id="summary"></dl>
+    <h2 id="processed-heading" hidden></h2>
+    <dl id="processed"></dl>
+    <canvas id="waveform" role="img" hidden></canvas>
+    <input id="position" type="range" min="0" max="0" step="0.01" value="0" disabled />
+    <span id="position-time"></span>
+    <div id="player">
+      <button id="play-original" type="button" aria-pressed="false" disabled></button>
+      <button id="play-processed" type="button" aria-pressed="false" disabled></button>
+      <button id="pause" type="button" disabled></button>
+      <button id="stop" type="button" disabled></button>
+    </div>
+    <script type="module" src="ui/app.js"></script>
+  </body>
 </html>

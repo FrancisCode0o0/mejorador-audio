@@ -26,7 +26,8 @@ const TEXTS = {
     "error.noAudioContext": "Este navegador no permite procesar audio (falta Web Audio).",
     "error.readFailed": "No se pudo leer el archivo.",
     "error.resampleFailed": "No se pudo convertir el audio a 48 kHz.",
-    "error.decodeFailed": "No se pudo decodificar el archivo. Prueba con otro formato (WAV, MP3, M4A).",
+    "error.decodeFailed":
+      "No se pudo decodificar el archivo. Prueba con otro formato (WAV, MP3, M4A).",
   },
 };
 

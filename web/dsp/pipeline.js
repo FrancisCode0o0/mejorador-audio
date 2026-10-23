@@ -12,6 +12,7 @@
  * @param {number} sampleRateHz sample rate of `samples`
  * @returns {Float32Array} the processed signal, a new array
  */
+// eslint-disable-next-line no-unused-vars -- the links added from F1.6 on use it.
 export function processSignal(samples, sampleRateHz) {
   // No links yet: a copy. sampleRateHz is already part of the signature
   // because the links added from F1.6 on need it.

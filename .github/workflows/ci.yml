@@ -1,0 +1,52 @@
+# ci.yml — checks every push: JS tests, formatter and linter; Python linter
+# and formatter; secret scan; tests of the repository tools.
+# Plan step: 1.0.f. Deployment to GitHub Pages stays in pages.yml.
+# Tool versions are pinned (package-lock.json, pip versions below), so a new
+# release cannot break the CI by itself.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tests (node:test)
+        run: npm test
+      - name: Formatter (Prettier)
+        run: npm run format:check
+      - name: Linter (ESLint)
+        run: npm run lint
+
+  python-and-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff==0.16.9 pytest==9.1.1
+      - name: Linter (ruff check)
+        run: ruff check .
+      - name: Formatter (ruff format)
+        run: ruff format --check .
+      - name: Secret scan of all tracked files
+        run: python tools/check_secrets.py --all
+      - name: Git identity for the tool tests (they commit in temporary repositories)
+        run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@users.noreply.github.com"
+      - name: Tests of tools/ (pytest)
+        run: python -m pytest -q tools/tests

@@ -11,7 +11,10 @@ test("start 1.0 s, 0.5 s elapsed (10.5 − 10.0) gives 1.5 s; the values are exa
 });
 
 test("elapsed time beyond the end is clamped to the duration, because the bar must not pass its maximum while `ended` is pending", () => {
-  assert.equal(computePlaybackPositionSeconds(1.0, 10.0, 100.0, DURATION_SECONDS), DURATION_SECONDS);
+  assert.equal(
+    computePlaybackPositionSeconds(1.0, 10.0, 100.0, DURATION_SECONDS),
+    DURATION_SECONDS,
+  );
 });
 
 test("now before startedAt gives the start position, because the context clock can lag while iOS resumes it", () => {

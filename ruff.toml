@@ -1,0 +1,15 @@
+# ruff.toml — Python lint and format settings. Plan step: 1.0.f (CI).
+# 100 columns, as Prettier for JS. The lint rules are fixed explicitly (ruff's
+# classic default set), so a newer ruff cannot fail the CI with new rules.
+line-length = 100
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+
+[lint.per-file-ignores]
+# The test imports check_secrets after putting tools/ on sys.path, on purpose.
+"tools/tests/*" = ["E402"]
+
+[format]
+# tools/ is shared with jcode-adaptado and keeps that repository's layout.
+exclude = ["tools/*"]

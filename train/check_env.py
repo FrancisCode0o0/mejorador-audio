@@ -3,6 +3,7 @@
 Run from the repo root:  py train/check_env.py
 Every line must say OK. Exit code 0 = environment ready.
 """
+
 import sys
 
 failures = 0
@@ -29,8 +30,10 @@ def py():
 
 def np_check():
     import numpy as np
+
     # Tiny numeric test: FFT of a delta is all ones.
-    x = np.zeros(8); x[0] = 1.0
+    x = np.zeros(8)
+    x[0] = 1.0
     assert np.allclose(np.fft.fft(x), 1.0)
     return np.__version__
 
@@ -38,6 +41,7 @@ def np_check():
 def scipy_check():
     import scipy
     from scipy import signal
+
     b, a = signal.butter(2, 0.1)  # design a filter: proves scipy.signal loads
     assert len(b) == 3
     return scipy.__version__
@@ -47,6 +51,7 @@ def sf_check():
     import io
     import numpy as np
     import soundfile as sf
+
     # Round-trip a 0.1 s, 48 kHz sine through an in-memory WAV.
     t = np.arange(4800) / 48000
     x = (0.5 * np.sin(2 * np.pi * 440 * t)).astype(np.float32)
@@ -60,6 +65,7 @@ def sf_check():
 
 def torch_check():
     import torch
+
     # A GRU forward + backward pass: exactly the kind of op Phase 6 needs.
     gru = torch.nn.GRU(input_size=42, hidden_size=24, batch_first=True)
     x = torch.randn(2, 10, 42)
@@ -85,6 +91,7 @@ def pesq_check():
 
 def stoi_check():
     from pystoi import stoi  # noqa: F401
+
     return "import OK"
 
 

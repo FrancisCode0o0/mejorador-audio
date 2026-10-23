@@ -15,3 +15,6 @@ datos/
 Thumbs.db
 .DS_Store
 reports/
+
+# Development tools installed by npm (package.json); never published.
+node_modules/

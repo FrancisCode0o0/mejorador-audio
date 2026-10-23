@@ -90,7 +90,12 @@ export function resolveStartSeconds(requestedSeconds, durationSeconds) {
  * @param {number} durationSeconds length of the signal
  * @returns {number} in [0, durationSeconds]
  */
-export function computePlaybackPositionSeconds(startSeconds, startedAtSeconds, nowSeconds, durationSeconds) {
+export function computePlaybackPositionSeconds(
+  startSeconds,
+  startedAtSeconds,
+  nowSeconds,
+  durationSeconds,
+) {
   const position = startSeconds + Math.max(0, nowSeconds - startedAtSeconds);
   return Math.min(Math.max(position, 0), durationSeconds);
 }

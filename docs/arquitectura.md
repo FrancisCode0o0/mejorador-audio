@@ -70,6 +70,11 @@ or `ui`.
 | `tools/tests/test_check_secrets.py` | tools (tests) | pytest tests for the secret checker and the pre-commit hook; fake keys are built at runtime. |
 | `.githooks/pre-commit` | tools (git hook) | Runs `tools/check_secrets.py --staged` before each commit; refuses the commit if no Python is found. |
 | `.github/workflows/pages.yml` | CI | Publishes the `web/` folder to GitHub Pages on every push to `main`. |
+| `.github/workflows/ci.yml` | CI | On every push: JS tests (node:test), Prettier and ESLint; ruff check and ruff format; `check_secrets.py --all`; pytest for `tools/`. Tool versions pinned. |
+| `package.json`, `package-lock.json` | CI (tools) | Development tools only (Prettier, ESLint), pinned; scripts `test`, `format:check`, `lint`. Nothing from npm is used in `web/`. |
+| `.prettierrc.json` | CI (tools) | Prettier settings: 100 columns. |
+| `eslint.config.js` | CI (tools) | ESLint rules: recommended set; browser globals for `web/`, Node globals for `tests/`. |
+| `ruff.toml` | CI (tools) | ruff settings: 100 columns, classic rule set pinned; `tools/` keeps the layout it shares with jcode-adaptado. |
 | `train/check_env.py` | train | Phase 0 check that the Python training packages (numpy, scipy, soundfile, torch, pystoi; pesq optional) work. |
 | `.gitattributes` | repo | Forces LF line endings for shell scripts and git hooks. |
 | `.gitignore` | repo | Keeps caches, training data, audio files, editor files and `reports/` out of git. |
