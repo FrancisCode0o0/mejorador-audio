@@ -28,3 +28,4 @@ Eine Datei pro Prompt: `NN-kurzname.md`, mit Ziel, Prompt, Ergebnis
 | 02 | `02-mono-48khz.md` | F1.2 · Mono-Mix und 48 kHz | c747595 |
 | 03 | `03-wellenform.md` | F1.3 · Wellenform im Canvas | 6313743 |
 | 04 | `04-ab-wiedergabe.md` | F1.4 · Verarbeitungskette und A/B-Wiedergabe | 6490709 |
+| 05 | `05-positionsleiste.md` | F1.4b · Gemeinsame Positionsleiste, Pause und Stopp | „F1.4b: shared position bar, pause and stop" |
