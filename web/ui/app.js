@@ -1,10 +1,13 @@
 // app.js — page controller: file input, decoding, mono 48 kHz, and the summaries.
 // Plan step: F1.1 (choose a file and show what the browser decoded) and
-// F1.2 (mono mix and resampling to 48 kHz, shown as "Procesado").
+// F1.2 (mono mix and resampling to 48 kHz, shown as "Procesado"),
+// F1.4 (processing chain and A/B playback of original and processed).
 
 import { decodeAudioFile, DECODE_ERROR_CODES } from "../io/decode.js";
 import { resampleTo48k, RESAMPLE_ERROR_CODES, TARGET_SAMPLE_RATE_HZ } from "../io/resample.js";
 import { mixToMono } from "../dsp/mono.js";
+import { processSignal } from "../dsp/pipeline.js";
+import { playSamples, stopPlayback } from "../io/playback.js";
 import { drawWaveform } from "./waveform.js";
 import { t } from "../i18n.js";
 
@@ -25,6 +28,8 @@ const ERROR_TEXT_KEYS = {
   [RESAMPLE_ERROR_CODES.resampleFailed]: "error.resampleFailed",
 };
 
+const PLAYBACK_ERROR_TEXT_KEY = "error.noAudioContext";
+
 const fileInput = document.getElementById("file-input");
 const fileLabel = document.getElementById("file-label");
 const statusMessage = document.getElementById("status");
@@ -32,16 +37,27 @@ const summaryList = document.getElementById("summary");
 const processedHeading = document.getElementById("processed-heading");
 const processedList = document.getElementById("processed");
 const waveformCanvas = document.getElementById("waveform");
+const playOriginalButton = document.getElementById("play-original");
+const playProcessedButton = document.getElementById("play-processed");
+const stopButton = document.getElementById("stop");
+const playbackButtons = [playOriginalButton, playProcessedButton, stopButton];
 
-// The mono 48 kHz signal that later links will process. The AudioBuffer is
-// not kept: it holds every channel at the source rate and is not needed again.
-let monoSamples48k = null;
+// The mono 48 kHz signal and its processed version. The AudioBuffer is not
+// kept: it holds every channel at the source rate and is not needed again.
+let originalSamples48k = null;
+let processedSamples48k = null;
 
 document.title = t("page.title");
 document.getElementById("heading").textContent = t("page.heading");
 fileLabel.textContent = t("file.label");
 processedHeading.textContent = t("processed.heading");
 waveformCanvas.setAttribute("aria-label", t("waveform.label"));
+playOriginalButton.textContent = t("play.original");
+playProcessedButton.textContent = t("play.processed");
+stopButton.textContent = t("play.stop");
+playOriginalButton.addEventListener("click", () => startPlayback(playOriginalButton, originalSamples48k));
+playProcessedButton.addEventListener("click", () => startPlayback(playProcessedButton, processedSamples48k));
+stopButton.addEventListener("click", stopPlayback);
 fileInput.addEventListener("change", onFileChosen);
 window.addEventListener("resize", redrawWaveform);
 
@@ -71,7 +87,8 @@ async function processFile(file, decoding, choiceNumber) {
   const mono = mixToMono(getChannels(audioBuffer));
   const samples = await resampleTo48k(mono, audioBuffer.sampleRate);
   if (choiceNumber !== latestChoiceNumber) return;
-  monoSamples48k = samples;
+  originalSamples48k = samples;
+  processedSamples48k = processSignal(samples, TARGET_SAMPLE_RATE_HZ);
   statusMessage.textContent = "";
   processedHeading.hidden = false;
   showRows(processedList, [
@@ -82,10 +99,35 @@ async function processFile(file, decoding, choiceNumber) {
   // Unhide first: a hidden canvas has zero width, so nothing could be drawn.
   waveformCanvas.hidden = false;
   redrawWaveform();
+  setPlaybackEnabled(true);
 }
 
 function redrawWaveform() {
-  if (monoSamples48k) drawWaveform(waveformCanvas, monoSamples48k);
+  if (processedSamples48k) drawWaveform(waveformCanvas, processedSamples48k);
+}
+
+function startPlayback(button, samples) {
+  // Called synchronously from the click so the AudioContext starts in the gesture.
+  try {
+    playSamples(samples, TARGET_SAMPLE_RATE_HZ, () => markPlaying(null));
+  } catch {
+    statusMessage.textContent = t(PLAYBACK_ERROR_TEXT_KEY);
+    return;
+  }
+  markPlaying(button);
+}
+
+// Marks which play button is active (null = none). playSamples stops the
+// previous sound first, whose onEnded unmarks its button before the new one
+// is marked here.
+function markPlaying(activeButton) {
+  for (const playButton of [playOriginalButton, playProcessedButton]) {
+    playButton.setAttribute("aria-pressed", String(playButton === activeButton));
+  }
+}
+
+function setPlaybackEnabled(enabled) {
+  for (const button of playbackButtons) button.disabled = !enabled;
 }
 
 function getChannels(audioBuffer) {
@@ -120,7 +162,10 @@ function showError(error) {
 }
 
 function clearResult() {
-  monoSamples48k = null;
+  stopPlayback();
+  setPlaybackEnabled(false);
+  originalSamples48k = null;
+  processedSamples48k = null;
   statusMessage.textContent = "";
   processedHeading.hidden = true;
   summaryList.replaceChildren();

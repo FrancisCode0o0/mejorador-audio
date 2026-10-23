@@ -4,13 +4,13 @@
 // The io layer has no visible texts (see docs/style.md), so errors carry a
 // stable `code` that the UI maps to a text with t().
 
+import { getAudioContext } from "./audio-context.js";
+
 export const DECODE_ERROR_CODES = Object.freeze({
   noAudioContext: "no-audio-context",
   readFailed: "read-failed",
   decodeFailed: "decode-failed",
 });
-
-let sharedAudioContext = null;
 
 /**
  * Decodes an audio file with the browser's decoder.
@@ -44,21 +44,6 @@ async function decodeWith(audioContext, file) {
   } catch (error) {
     throw decodeError(DECODE_ERROR_CODES.decodeFailed, error);
   }
-}
-
-function getAudioContext() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContextClass) {
-    throw new Error("Web Audio API is not available");
-  }
-  if (!sharedAudioContext) {
-    sharedAudioContext = new AudioContextClass();
-  }
-  if (sharedAudioContext.state === "suspended") {
-    // Not awaited: the call itself must happen inside the gesture.
-    sharedAudioContext.resume().catch(() => {});
-  }
-  return sharedAudioContext;
 }
 
 function decodeError(code, cause) {

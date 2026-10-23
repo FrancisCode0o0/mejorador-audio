@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
-  index.html — the app page: a file input and the summary of the decoded file.
-  Plan step: F1.1 (choose a file and show what the browser decoded).
+  index.html — the app page: file input, summaries, waveform and playback buttons.
+  Plan step: F1.1 (choose a file and show what the browser decoded); extended
+  in F1.2 (processed summary), F1.3 (waveform) and F1.4 (A/B playback).
   Contains no visible text; ui/app.js fills it in from i18n.js.
 -->
 <html lang="es">
@@ -22,6 +23,9 @@
       margin-top: 1rem;
     }
     #waveform[hidden] { display: none; }
+    #player { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+    #player button { flex: 1 1 8rem; min-height: 2.75rem; font-size: 1rem; }
+    #player button[aria-pressed="true"] { font-weight: bold; outline: 3px solid #1a73e8; }
     #file-label { display: block; margin-bottom: .5rem; }
     #file-input { width: 100%; font-size: 1rem; }
     dt { font-weight: bold; margin-top: .75rem; }
@@ -38,6 +42,11 @@
   <h2 id="processed-heading" hidden></h2>
   <dl id="processed"></dl>
   <canvas id="waveform" role="img" hidden></canvas>
+  <div id="player">
+    <button id="play-original" type="button" aria-pressed="false" disabled></button>
+    <button id="play-processed" type="button" aria-pressed="false" disabled></button>
+    <button id="stop" type="button" disabled></button>
+  </div>
   <script type="module" src="ui/app.js"></script>
 </body>
 </html>
