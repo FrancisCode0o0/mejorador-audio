@@ -29,3 +29,4 @@ Eine Datei pro Prompt: `NN-kurzname.md`, mit Ziel, Prompt, Ergebnis
 | 03 | `03-wellenform.md` | F1.3 · Wellenform im Canvas | 6313743 |
 | 04 | `04-ab-wiedergabe.md` | F1.4 · Verarbeitungskette und A/B-Wiedergabe | 6490709 |
 | 05 | `05-positionsleiste.md` | F1.4b · Gemeinsame Positionsleiste, Pause und Stopp | „F1.4b: shared position bar, pause and stop" |
+| 06 | `06-wav-export.md` | F1.5 · WAV-Export, von Hand geschrieben | 74479bd |
