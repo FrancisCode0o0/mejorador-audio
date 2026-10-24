@@ -2,7 +2,8 @@
 // Plan step: F1.1 (choose a file and show what the browser decoded) and
 // F1.2 (mono mix and resampling to 48 kHz, shown as "Procesado"),
 // F1.4 (processing chain and A/B playback of original and processed) and
-// F1.4b (one shared position bar, pause and stop).
+// F1.4b (one shared position bar, pause and stop) and
+// F1.5 (download of the processed signal as a WAV file).
 
 import { decodeAudioFile, DECODE_ERROR_CODES } from "../io/decode.js";
 import { resampleTo48k, RESAMPLE_ERROR_CODES, TARGET_SAMPLE_RATE_HZ } from "../io/resample.js";
@@ -14,11 +15,17 @@ import {
   getPlaybackPositionSeconds,
   END_REASONS,
 } from "../io/playback.js";
+import { encodeWavMono16 } from "../io/wav.js";
 import { drawWaveform } from "./waveform.js";
 import { t } from "../i18n.js";
 
 const DURATION_DECIMALS = 2;
 const PROCESSED_CHANNEL_COUNT = 1;
+const WAV_MIME_TYPE = "audio/wav";
+const WAV_EXTENSION = ".wav";
+// Safari may still be starting the download when click() returns; revoking the
+// URL at once could cancel it. 10 s is far longer than that start-up.
+const OBJECT_URL_REVOKE_DELAY_MS = 10000;
 
 // Increases on every change event. Decoding is asynchronous and its duration
 // depends on the file, so an older file can finish after a newer one; a result
@@ -49,12 +56,22 @@ const pauseButton = document.getElementById("pause");
 const stopButton = document.getElementById("stop");
 const positionRange = document.getElementById("position");
 const positionTime = document.getElementById("position-time");
-const playbackButtons = [playOriginalButton, playProcessedButton, pauseButton, stopButton];
+const downloadButton = document.getElementById("download-wav");
+// Every button that needs a processed result: enabled after processing, disabled in clearResult.
+const playbackButtons = [
+  playOriginalButton,
+  playProcessedButton,
+  pauseButton,
+  stopButton,
+  downloadButton,
+];
 
 // The mono 48 kHz signal and its processed version. The AudioBuffer is not
 // kept: it holds every channel at the source rate and is not needed again.
 let originalSamples48k = null;
 let processedSamples48k = null;
+// Name of the chosen file, used to name the download.
+let chosenFileName = null;
 
 // One position shared by original and processed, so switching A/B continues at
 // the same moment. While a sound plays it is only updated when playback stops
@@ -76,10 +93,12 @@ playOriginalButton.textContent = t("play.original");
 playProcessedButton.textContent = t("play.processed");
 pauseButton.textContent = t("play.pause");
 stopButton.textContent = t("play.stop");
+downloadButton.textContent = t("export.wav");
 playOriginalButton.addEventListener("click", () => switchPlayback(playOriginalButton));
 playProcessedButton.addEventListener("click", () => switchPlayback(playProcessedButton));
 pauseButton.addEventListener("click", pausePlayback);
 stopButton.addEventListener("click", resetPlayback);
+downloadButton.addEventListener("click", downloadProcessedWav);
 positionRange.addEventListener("input", onPositionDragged);
 positionRange.addEventListener("change", onPositionReleased);
 fileInput.addEventListener("change", onFileChosen);
@@ -113,6 +132,7 @@ async function processFile(file, decoding, choiceNumber) {
   if (choiceNumber !== latestChoiceNumber) return;
   originalSamples48k = samples;
   processedSamples48k = processSignal(samples, TARGET_SAMPLE_RATE_HZ);
+  chosenFileName = file.name;
   statusMessage.textContent = "";
   processedHeading.hidden = false;
   showRows(processedList, [
@@ -127,6 +147,26 @@ async function processFile(file, decoding, choiceNumber) {
   positionRange.max = String(samples.length / TARGET_SAMPLE_RATE_HZ);
   showPosition(positionSeconds);
   setPlaybackEnabled(true);
+}
+
+// The WAV is built at click time and not kept: it would be a second copy of the audio.
+function downloadProcessedWav() {
+  if (!processedSamples48k) return;
+  const wav = encodeWavMono16(processedSamples48k, TARGET_SAMPLE_RATE_HZ);
+  const url = URL.createObjectURL(new Blob([wav], { type: WAV_MIME_TYPE }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = downloadFileName(chosenFileName);
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), OBJECT_URL_REVOKE_DELAY_MS);
+}
+
+// "voz.m4a" → "voz-procesado.wav"; a name without a dot keeps all of it.
+// A leading dot (".hidden") is not an extension separator.
+function downloadFileName(fileName) {
+  const lastDotIndex = fileName.lastIndexOf(".");
+  const baseName = lastDotIndex > 0 ? fileName.slice(0, lastDotIndex) : fileName;
+  return `${baseName}-${t("export.fileSuffix")}${WAV_EXTENSION}`;
 }
 
 function redrawWaveform() {
@@ -264,6 +304,7 @@ function clearResult() {
   setPlaybackEnabled(false);
   originalSamples48k = null;
   processedSamples48k = null;
+  chosenFileName = null;
   positionSeconds = 0;
   positionRange.value = "0";
   positionTime.textContent = "";

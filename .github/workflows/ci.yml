@@ -1,6 +1,7 @@
 # ci.yml — checks every push: JS tests, formatter and linter; Python linter
-# and formatter; secret scan; tests of the repository tools.
-# Plan step: 1.0.f. Deployment to GitHub Pages stays in pages.yml.
+# and formatter; secret scan; tests of the repository tools; regeneration check
+# of the reference vectors with soundfile (F1.5).
+# Plan step: 1.0.f; F1.5 adds the reference vectors check. Deployment to GitHub Pages stays in pages.yml.
 # Tool versions are pinned (package-lock.json, pip versions below), so a new
 # release cannot break the CI by itself.
 name: CI
@@ -37,7 +38,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ruff==0.16.9 pytest==9.1.1
+      - run: pip install ruff==0.16.9 pytest==9.1.1 numpy==2.5.4 soundfile==0.14.0
       - name: Linter (ruff check)
         run: ruff check .
       - name: Formatter (ruff format)
@@ -50,3 +51,5 @@ jobs:
           git config --global user.email "ci@users.noreply.github.com"
       - name: Tests of tools/ (pytest)
         run: python -m pytest -q tools/tests
+      - name: Reference vectors (soundfile) match the committed JSON
+        run: python tests/ref/wav_ref.py --check

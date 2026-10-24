@@ -1,5 +1,5 @@
 // i18n.js — every visible text of the page, and the lookup function t(key).
-// Plan step: F1.1 (texts); F1.4b adds the position and pause texts. Only ui/ imports this file (docs/style.md).
+// Plan step: F1.1 (texts); F1.4b adds the position and pause texts; F1.5 the WAV download texts. Only ui/ imports this file (docs/style.md).
 // Spanish only for now; "en" and "de" are added here when the plan reaches them.
 
 const LANGUAGE = "es";
@@ -17,6 +17,8 @@ const TEXTS = {
     "play.pause": "Pausa",
     "play.stop": "Parar",
     "position.label": "Posición",
+    "export.wav": "Descargar WAV",
+    "export.fileSuffix": "procesado",
     "info.name": "Nombre",
     "info.duration": "Duración",
     "info.channels": "Canales",

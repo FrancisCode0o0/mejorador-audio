@@ -48,9 +48,14 @@ or `ui`.
 
 | File | Layer | What it does |
 | --- | --- | --- |
-| `web/index.html` | ui | One-column page: file input, summaries, waveform, a position range with its time text, and the buttons (play original, play processed, pause, stop); loads `ui/app.js` as a module. Contains no visible text. |
-| `web/ui/app.js` | ui | Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. Plays original or processed with one shared position (an A/B switch continues at the same moment): the range and time text follow playback and can be dragged to seek; "Pausa" stops and keeps the position, "Parar" stops and returns to 0. |
-| `web/i18n.js` | ui (texts) | Spanish texts and `t(key)`. |
+| `web/index.html` | ui | One-column page: file input, summaries, waveform, a position range with its time text, and the buttons (play original, play processed, pause, stop, download WAV); loads `ui/app.js` as a module. Contains no visible text. |
+| `web/ui/app.js` | ui | Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. Plays original or processed with one shared position (an A/B switch continues at the same moment): the range and time text follow playback and can be dragged to seek; "Pausa" stops and keeps the position, "Parar" stops and returns to 0. "Descargar WAV" builds the WAV of the processed signal at click time and downloads it as `<name>-procesado.wav`. |
+| `web/i18n.js` | ui (texts) | Spanish texts (including the WAV download button and file-name suffix) and `t(key)`. |
+| `web/io/wav.js` | io | `encodeWavMono16(samples, rate)`: mono 16-bit PCM WAV with the canonical 44-byte header, written by hand; `floatToInt16(sample)`: NaN → 0, clip, scale 32767, round. Pure: no DOM, no Web Audio. |
+| `tests/io/wav.test.js` | tests | node:test tests for `wav.js`: byte-for-byte equality with the soundfile vectors, header fields, NaN / infinities / −0, invalid rates. |
+| `tests/ref/wav_ref.py` | tests (reference) | Generates `tests/ref/vectors/wav.json` with soundfile; `--check` regenerates in memory and compares with the committed file. |
+| `tests/ref/vectors/wav.json` | tests (reference) | Generated vectors (input, expected 16-bit codes, expected WAV as hex). Not edited by hand; keeps the generator's layout. |
+| `.prettierignore` | CI (tools) | Keeps Prettier away from the generated vectors in `tests/ref/vectors/`. |
 | `web/io/decode.js` | io | `decodeAudioFile(file)`: reads the File and decodes it with `decodeAudioData` on the shared context; rejects with an Error carrying a `code`. |
 | `web/io/audio-context.js` | io | `getAudioContext()`: the one shared AudioContext; created and resumed synchronously inside a user gesture (iOS). |
 | `web/io/playback.js` | io | `playSamples(samples, rate, onEnded, startSeconds)` / `stopPlayback` / `getPlaybackPositionSeconds`: plays mono samples through the shared context from a start position, one sound at a time; `onEnded` gets `"ended"` or `"stopped"`. The pure helpers `resolveStartSeconds` and `computePlaybackPositionSeconds` are exported for tests. |
@@ -70,7 +75,7 @@ or `ui`.
 | `tools/tests/test_check_secrets.py` | tools (tests) | pytest tests for the secret checker and the pre-commit hook; fake keys are built at runtime. |
 | `.githooks/pre-commit` | tools (git hook) | Runs `tools/check_secrets.py --staged` before each commit; refuses the commit if no Python is found. |
 | `.github/workflows/pages.yml` | CI | Publishes the `web/` folder to GitHub Pages on every push to `main`. |
-| `.github/workflows/ci.yml` | CI | On every push: JS tests (node:test), Prettier and ESLint; ruff check and ruff format; `check_secrets.py --all`; pytest for `tools/`. Tool versions pinned. |
+| `.github/workflows/ci.yml` | CI | On every push: JS tests (node:test), Prettier and ESLint; ruff check and ruff format; `check_secrets.py --all`; pytest for `tools/`; `tests/ref/wav_ref.py --check` (reference vectors still match soundfile). Tool and reference-library versions pinned. |
 | `package.json`, `package-lock.json` | CI (tools) | Development tools only (Prettier, ESLint), pinned; scripts `test`, `format:check`, `lint`. Nothing from npm is used in `web/`. |
 | `.prettierrc.json` | CI (tools) | Prettier settings: 100 columns. |
 | `eslint.config.js` | CI (tools) | ESLint rules: recommended set; browser globals for `web/`, Node globals for `tests/`. |

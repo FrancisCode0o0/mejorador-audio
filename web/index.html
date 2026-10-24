@@ -2,8 +2,8 @@
 <!--
   index.html — the app page: file input, summaries, waveform, position bar and playback buttons.
   Plan step: F1.1 (choose a file and show what the browser decoded); extended
-  in F1.2 (processed summary), F1.3 (waveform), F1.4 (A/B playback) and
-  F1.4b (shared position bar, pause and stop).
+  in F1.2 (processed summary), F1.3 (waveform), F1.4 (A/B playback),
+  F1.4b (shared position bar, pause and stop) and F1.5 (WAV download).
   Contains no visible text; ui/app.js fills it in from i18n.js.
 -->
 <html lang="es">
@@ -96,6 +96,7 @@
       <button id="play-processed" type="button" aria-pressed="false" disabled></button>
       <button id="pause" type="button" disabled></button>
       <button id="stop" type="button" disabled></button>
+      <button id="download-wav" type="button" disabled></button>
     </div>
     <script type="module" src="ui/app.js"></script>
   </body>
