@@ -25,6 +25,9 @@ Decoding, resampling to 48 kHz and WAV export are in `web/io/`; the mono mix
 and every other link are one file each in `web/dsp/`. `web/dsp/pipeline.js` is
 the only place that chains the `dsp` links.
 
+Until F3 the only link is peak normalisation (F1.6), which F3 replaces with
+loudness normalisation and the true-peak limiter.
+
 ## 2. Folder map
 
 - `web/dsp/` — pure signal processing: Float32Array in and out. No DOM, no
@@ -60,8 +63,10 @@ or `ui`.
 | `web/io/audio-context.js` | io | `getAudioContext()`: the one shared AudioContext; created and resumed synchronously inside a user gesture (iOS). |
 | `web/io/playback.js` | io | `playSamples(samples, rate, onEnded, startSeconds)` / `stopPlayback` / `getPlaybackPositionSeconds`: plays mono samples through the shared context from a start position, one sound at a time; `onEnded` gets `"ended"` or `"stopped"`. The pure helpers `resolveStartSeconds` and `computePlaybackPositionSeconds` are exported for tests. |
 | `tests/io/playback.test.js` | tests | node:test tests for `resolveStartSeconds` and `computePlaybackPositionSeconds` (position maths, clamping, clock lag, out-of-range start). |
-| `web/dsp/pipeline.js` | dsp | `processSignal`: the only place that chains the dsp links; no links yet, returns a copy. |
-| `tests/dsp/pipeline.test.js` | tests | node:test tests for `processSignal` (equal output, new object). |
+| `web/dsp/pipeline.js` | dsp | `processSignal`: the only place that chains the dsp links; the only link today is `normalizePeak` (F1.6). |
+| `tests/dsp/pipeline.test.js` | tests | node:test tests for `processSignal` (output equals `normalizePeak(input)`, new object). |
+| `web/dsp/peak-normalize.js` | dsp | `normalizePeak(samples)`: scales by one gain so that max\|x\| is `PEAK_TARGET_LINEAR` = 0.89 (≈ −1 dBFS); silence and empty input are copied. Temporary: F3 replaces it. |
+| `tests/dsp/peak-normalize.test.js` | tests | node:test tests for `normalizePeak` (known values within 1e-7, negative peak, above full scale, silence, empty, new object). |
 | `web/dsp/mono.js` | dsp | `mixToMono(channels)`: averages N channels into one new Float32Array. |
 | `web/io/resample.js` | io | `resampleTo48k(samples, rate)`: renders mono samples at 48 kHz in an OfflineAudioContext; returns them unchanged if already 48 kHz. |
 | `web/ui/waveform.js` | ui | `computeColumnPeaks` (pure min/max per column) and `drawWaveform` (draws them on a canvas, one line per device pixel column). |

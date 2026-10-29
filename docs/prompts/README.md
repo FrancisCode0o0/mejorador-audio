@@ -30,3 +30,5 @@ Eine Datei pro Prompt: `NN-kurzname.md`, mit Ziel, Prompt, Ergebnis
 | 04 | `04-ab-wiedergabe.md` | F1.4 · Verarbeitungskette und A/B-Wiedergabe | 6490709 |
 | 05 | `05-positionsleiste.md` | F1.4b · Gemeinsame Positionsleiste, Pause und Stopp | „F1.4b: shared position bar, pause and stop" |
 | 06 | `06-wav-export.md` | F1.5 · WAV-Export, von Hand geschrieben | 74479bd |
+| 07 | `07-spektrale-subtraktion.md` | F3 · Recherche: Spektrale Subtraktion als Vergleichsbasis (Chat, kein Code) | — |
+| 08 | `08-spitzennormalisierung.md` | F1.6 · Spitzennormalisierung, erstes Glied der Kette | „F1.6: peak normalisation as the first link of the chain" |
