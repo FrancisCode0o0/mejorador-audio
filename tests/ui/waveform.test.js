@@ -1,7 +1,8 @@
-// Tests for computeColumnPeaks in web/ui/waveform.js (plan step F1.3). Run: node --test
+// Tests for computeColumnPeaks (plan step F1.3) and fractionFromPointer (F1.7) in
+// web/ui/waveform.js. Run: node --test
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeColumnPeaks } from "../../web/ui/waveform.js";
+import { computeColumnPeaks, fractionFromPointer } from "../../web/ui/waveform.js";
 
 test("[0,1,-1,0.5] in 2 columns gives min [0,-1] and max [1,0.5]; all values are exact in float32, so the tolerance is zero", () => {
   const { min, max } = computeColumnPeaks(Float32Array.of(0, 1, -1, 0.5), 2);
@@ -36,4 +37,21 @@ test("an odd split (7 samples, 3 columns) still covers every sample once: the gl
   const { min, max } = computeColumnPeaks(samples, 3);
   assert.equal(Math.min(...min), -0.5);
   assert.equal(Math.max(...max), 0.5);
+});
+
+test("a pointer inside the box (box at x=100, width 200, pointer at 200) gives 0.5; the values are exact in float64, so the tolerance is zero", () => {
+  assert.equal(fractionFromPointer(200, 100, 200), 0.5);
+});
+
+test("a pointer left of the box gives 0, because a press in the margin must seek to the start, not before it", () => {
+  assert.equal(fractionFromPointer(50, 100, 200), 0);
+});
+
+test("a pointer right of the box gives 1, because a press in the margin must seek to the end, not after it", () => {
+  assert.equal(fractionFromPointer(400, 100, 200), 1);
+});
+
+test("a box of width 0 (hidden) or negative gives 0, because dividing by zero must not give NaN or Infinity", () => {
+  assert.equal(fractionFromPointer(150, 100, 0), 0);
+  assert.equal(fractionFromPointer(150, 100, -10), 0);
 });

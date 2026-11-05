@@ -1,9 +1,8 @@
 // app.js — page controller: file input, decoding, mono 48 kHz, and the summaries.
-// Plan step: F1.1 (choose a file and show what the browser decoded) and
-// F1.2 (mono mix and resampling to 48 kHz, shown as "Procesado"),
-// F1.4 (processing chain and A/B playback of original and processed) and
-// F1.4b (one shared position bar, pause and stop) and
-// F1.5 (download of the processed signal as a WAV file).
+// Plan step: F1.1 (choose a file, show what the browser decoded), F1.2 (mono
+// 48 kHz, "Procesado"), F1.4 (processing chain, A/B playback), F1.4b (shared
+// position bar, pause, stop), F1.5 (WAV download, built in download.js) and
+// F1.7 (original and processed waveforms in two rows, playhead, click-to-seek, clock).
 
 import { decodeAudioFile, DECODE_ERROR_CODES } from "../io/decode.js";
 import { resampleTo48k, RESAMPLE_ERROR_CODES, TARGET_SAMPLE_RATE_HZ } from "../io/resample.js";
@@ -15,23 +14,17 @@ import {
   getPlaybackPositionSeconds,
   END_REASONS,
 } from "../io/playback.js";
-import { encodeWavMono16 } from "../io/wav.js";
-import { drawWaveform } from "./waveform.js";
+import { downloadWav } from "./download.js";
+import { createWaveformRows } from "./waveform.js";
+import { formatClock } from "./clock.js";
+import { formatDuration, formatHertz, showRows } from "./summary.js";
 import { t } from "../i18n.js";
 
-const DURATION_DECIMALS = 2;
 const PROCESSED_CHANNEL_COUNT = 1;
-const WAV_MIME_TYPE = "audio/wav";
-const WAV_EXTENSION = ".wav";
-// Safari may still be starting the download when click() returns; revoking the
-// URL at once could cancel it. 10 s is far longer than that start-up.
-const OBJECT_URL_REVOKE_DELAY_MS = 10000;
 
-// Increases on every change event. Decoding is asynchronous and its duration
-// depends on the file, so an older file can finish after a newer one; a result
-// is shown only if its number is still the latest, otherwise the old file's
-// summary would overwrite the file the user chose last. It is checked after
-// every await, in the decode step and in the resample step.
+// Increases on every change event. An older file can finish decoding after a
+// newer one; a result is shown only if its number is still the latest, otherwise
+// it would overwrite the file the user chose last. Checked after every await.
 let latestChoiceNumber = 0;
 
 const ERROR_TEXT_KEYS = {
@@ -40,7 +33,6 @@ const ERROR_TEXT_KEYS = {
   [DECODE_ERROR_CODES.decodeFailed]: "error.decodeFailed",
   [RESAMPLE_ERROR_CODES.resampleFailed]: "error.resampleFailed",
 };
-
 const PLAYBACK_ERROR_TEXT_KEY = "error.noAudioContext";
 
 const fileInput = document.getElementById("file-input");
@@ -49,7 +41,8 @@ const statusMessage = document.getElementById("status");
 const summaryList = document.getElementById("summary");
 const processedHeading = document.getElementById("processed-heading");
 const processedList = document.getElementById("processed");
-const waveformCanvas = document.getElementById("waveform");
+const waveformBox = document.getElementById("waveform-box");
+const waveformRows = createWaveformRows(waveformBox);
 const playOriginalButton = document.getElementById("play-original");
 const playProcessedButton = document.getElementById("play-processed");
 const pauseButton = document.getElementById("pause");
@@ -87,7 +80,6 @@ document.title = t("page.title");
 document.getElementById("heading").textContent = t("page.heading");
 fileLabel.textContent = t("file.label");
 processedHeading.textContent = t("processed.heading");
-waveformCanvas.setAttribute("aria-label", t("waveform.label"));
 positionRange.setAttribute("aria-label", t("position.label"));
 playOriginalButton.textContent = t("play.original");
 playProcessedButton.textContent = t("play.processed");
@@ -101,6 +93,7 @@ stopButton.addEventListener("click", resetPlayback);
 downloadButton.addEventListener("click", downloadProcessedWav);
 positionRange.addEventListener("input", onPositionDragged);
 positionRange.addEventListener("change", onPositionReleased);
+waveformBox.addEventListener("click", onWaveformClicked);
 fileInput.addEventListener("change", onFileChosen);
 window.addEventListener("resize", redrawWaveform);
 
@@ -141,7 +134,7 @@ async function processFile(file, decoding, choiceNumber) {
     ["info.duration", formatDuration(samples.length / TARGET_SAMPLE_RATE_HZ)],
   ]);
   // Unhide first: a hidden canvas has zero width, so nothing could be drawn.
-  waveformCanvas.hidden = false;
+  waveformBox.hidden = false;
   redrawWaveform();
   positionSeconds = 0;
   positionRange.max = String(samples.length / TARGET_SAMPLE_RATE_HZ);
@@ -149,28 +142,13 @@ async function processFile(file, decoding, choiceNumber) {
   setPlaybackEnabled(true);
 }
 
-// The WAV is built at click time and not kept: it would be a second copy of the audio.
 function downloadProcessedWav() {
   if (!processedSamples48k) return;
-  const wav = encodeWavMono16(processedSamples48k, TARGET_SAMPLE_RATE_HZ);
-  const url = URL.createObjectURL(new Blob([wav], { type: WAV_MIME_TYPE }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = downloadFileName(chosenFileName);
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), OBJECT_URL_REVOKE_DELAY_MS);
-}
-
-// "voz.m4a" → "voz-procesado.wav"; a name without a dot keeps all of it.
-// A leading dot (".hidden") is not an extension separator.
-function downloadFileName(fileName) {
-  const lastDotIndex = fileName.lastIndexOf(".");
-  const baseName = lastDotIndex > 0 ? fileName.slice(0, lastDotIndex) : fileName;
-  return `${baseName}-${t("export.fileSuffix")}${WAV_EXTENSION}`;
+  downloadWav(processedSamples48k, TARGET_SAMPLE_RATE_HZ, chosenFileName);
 }
 
 function redrawWaveform() {
-  if (processedSamples48k) drawWaveform(waveformCanvas, processedSamples48k);
+  if (processedSamples48k) waveformRows.draw(originalSamples48k, processedSamples48k);
 }
 
 function samplesOf(button) {
@@ -225,8 +203,21 @@ function onPositionDragged() {
 
 function onPositionReleased() {
   isDraggingPosition = false;
-  positionSeconds = Number(positionRange.value);
-  showPositionText(positionSeconds);
+  seekTo(Number(positionRange.value));
+}
+
+// Seeks on click, not pointerdown: pointerdown fires as soon as a finger touches
+// the waveform, so swiping the page to scroll would also seek. click fires only
+// for a tap or a mouse click without movement, and not for the right button.
+function onWaveformClicked(event) {
+  if (!originalSamples48k) return;
+  seekTo(waveformRows.fractionAt(event.clientX) * totalSeconds());
+}
+
+// The one way to jump (range release, click on the waveform); a playing sound continues there.
+function seekTo(seconds) {
+  positionSeconds = seconds;
+  showPosition(positionSeconds);
   if (activeButton) startPlayback(activeButton);
 }
 
@@ -248,16 +239,23 @@ function showPosition(seconds) {
   showPositionText(seconds);
 }
 
+// Also moves the playhead, so it follows the range while it is dragged.
 function showPositionText(seconds) {
-  const totalSeconds = originalSamples48k.length / TARGET_SAMPLE_RATE_HZ;
-  positionTime.textContent = `${seconds.toFixed(DURATION_DECIMALS)} / ${formatDuration(totalSeconds)}`;
+  const total = totalSeconds();
+  positionTime.textContent = formatClock(seconds, total);
+  waveformRows.placePlayhead(total > 0 ? seconds / total : 0);
 }
 
-// Marks which play button is active (null = none). playSamples stops the
-// previous sound first, whose onEnded unmarks its button before the new one
-// is marked here.
+function totalSeconds() {
+  return originalSamples48k.length / TARGET_SAMPLE_RATE_HZ;
+}
+
+// Marks the active play button and its waveform row (null = none: pause, stop, end).
+// playSamples stops the previous sound first, whose onEnded unmarks its button
+// before the new one is marked here.
 function markPlaying(button) {
   activeButton = button;
+  waveformRows.setActive(button === playOriginalButton, button === playProcessedButton);
   for (const playButton of [playOriginalButton, playProcessedButton]) {
     playButton.setAttribute("aria-pressed", String(playButton === button));
   }
@@ -274,24 +272,6 @@ function getChannels(audioBuffer) {
     channels.push(audioBuffer.getChannelData(index));
   }
   return channels;
-}
-
-function formatDuration(seconds) {
-  return `${seconds.toFixed(DURATION_DECIMALS)} ${t("unit.seconds")}`;
-}
-
-function formatHertz(hertz) {
-  return `${hertz} ${t("unit.hertz")}`;
-}
-
-function showRows(listElement, rows) {
-  for (const [labelKey, value] of rows) {
-    const term = document.createElement("dt");
-    term.textContent = t(labelKey);
-    const description = document.createElement("dd");
-    description.textContent = value;
-    listElement.append(term, description);
-  }
 }
 
 function showError(error) {
@@ -312,6 +292,7 @@ function clearResult() {
   processedHeading.hidden = true;
   summaryList.replaceChildren();
   processedList.replaceChildren();
-  waveformCanvas.getContext("2d").clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
-  waveformCanvas.hidden = true;
+  waveformRows.clear();
+  waveformBox.hidden = true;
+  waveformRows.placePlayhead(0);
 }

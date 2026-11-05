@@ -23,3 +23,9 @@
 
 (b), in F1.7: gleiche Leinwand, gleiche Skala (±1), Farben als
 CSS-Variablen. So sieht man ohne Klick, was die Verarbeitung verändert.
+
+## Später geändert (05.11.2026)
+
+Beim Test in F1.7 zeigte sich, dass man eine Wellenform in der anderen
+nicht versteht. Fran entschied sich für zwei Zeilen (Original oben,
+Verarbeitung unten); siehe Eintrag 32.

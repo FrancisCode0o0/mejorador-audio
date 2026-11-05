@@ -1,9 +1,16 @@
 <!doctype html>
 <!--
-  index.html — the app page: file input, summaries, waveform, position bar and playback buttons.
+  index.html — the app page: file input, summaries, the waveform box (original
+  and processed in two rows, one playhead over both), position bar with clock,
+  and playback buttons.
   Plan step: F1.1 (choose a file and show what the browser decoded); extended
   in F1.2 (processed summary), F1.3 (waveform), F1.4 (A/B playback),
-  F1.4b (shared position bar, pause and stop) and F1.5 (WAV download).
+  F1.4b (shared position bar, pause and stop), F1.5 (WAV download) and
+  F1.7 (single column for phones, two waveform rows with playhead, clock).
+  One column of at most 40 rem; nothing is wider than its container, so there
+  is no horizontal scroll down to 320 px CSS (the buttons wrap, long file names
+  break, the canvases and the range are 100 % wide). The row of the sound that
+  is playing glows (.is-active, set by ui/app.js).
   Contains no visible text; ui/app.js fills it in from i18n.js.
 -->
 <html lang="es">
@@ -24,16 +31,63 @@
       h2 {
         font-size: 1.15rem;
       }
-      #waveform {
-        --waveform-color: #1a73e8;
+      /* The colours are read by ui/waveform.js from each canvas (inherited from its row and the box). */
+      #waveform-box {
         --waveform-background: #f1f3f4;
+        --playhead-color: #d93025;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 1rem;
+        /* Tap = seek, so no double-tap zoom delay on the waveform. */
+        touch-action: manipulation;
+      }
+      #waveform-box[hidden] {
+        display: none;
+      }
+      .waveform-row {
+        position: relative;
+        transition: box-shadow 150ms;
+      }
+      #row-original {
+        --waveform-color: #80868b;
+      }
+      #row-processed {
+        --waveform-color: #1a73e8;
+      }
+      /* Glow on the edges of the row whose sound is playing. */
+      .waveform-row.is-active {
+        box-shadow: 0 0 6px 1px rgba(26, 115, 232, 0.45);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .waveform-row {
+          transition: none;
+        }
+      }
+      .waveform-row canvas {
         display: block;
         width: 100%;
-        height: 120px;
-        margin-top: 1rem;
+        height: 80px;
       }
-      #waveform[hidden] {
-        display: none;
+      .waveform-name {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 0 0.25rem;
+        font-size: 0.75rem;
+        background: rgba(255, 255, 255, 0.7);
+        pointer-events: none;
+      }
+      #playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 2px;
+        transform: translateX(-50%);
+        background: var(--playhead-color);
+        pointer-events: none;
       }
       #position {
         display: block;
@@ -88,7 +142,17 @@
     <dl id="summary"></dl>
     <h2 id="processed-heading" hidden></h2>
     <dl id="processed"></dl>
-    <canvas id="waveform" role="img" hidden></canvas>
+    <div id="waveform-box" hidden>
+      <div class="waveform-row" id="row-original">
+        <canvas id="waveform-original" role="img"></canvas>
+        <span class="waveform-name" id="name-original"></span>
+      </div>
+      <div class="waveform-row" id="row-processed">
+        <canvas id="waveform-processed" role="img"></canvas>
+        <span class="waveform-name" id="name-processed"></span>
+      </div>
+      <div id="playhead" aria-hidden="true"></div>
+    </div>
     <input id="position" type="range" min="0" max="0" step="0.01" value="0" disabled />
     <span id="position-time"></span>
     <div id="player">

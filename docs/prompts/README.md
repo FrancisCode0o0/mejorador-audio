@@ -50,7 +50,8 @@ Arbeitsweise, Werkzeuge und Organisation.
 | 14 | `14-rolle-der-ki.md` | Verständnis · Was macht die KI in der App? | — |
 | 15 | `15-nur-sprache-mono-stereo.md` | Umfang · Nur Sprache? Mono oder Stereo | — |
 | 16 | `16-langsames-anhoeren.md` | F3A · Einen Abschnitt verlangsamt anhören (WSOLA) | — |
-| 17 | `17-wellenformen-ueberlagert.md` | F1.7 · Original und Verarbeitung übereinander | — |
+| 17 | `17-wellenformen-ueberlagert.md` | F1.7 · Original und Verarbeitung übereinander (später ersetzt, siehe 32) | — |
+| 32 | `32-mobil-sprachen-wellenform.md` | F1.7 · Handy-Layout, Sprachprüfung, zwei Wellenformen, Abspielmarke und Uhr | „F1.7: two waveform rows, playhead, clock and language check" |
 
 ## Ergänzende Prompts
 

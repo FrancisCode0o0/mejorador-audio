@@ -51,9 +51,12 @@ or `ui`.
 
 | File | Layer | What it does |
 | --- | --- | --- |
-| `web/index.html` | ui | One-column page: file input, summaries, waveform, a position range with its time text, and the buttons (play original, play processed, pause, stop, download WAV); loads `ui/app.js` as a module. Contains no visible text. |
-| `web/ui/app.js` | ui | Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. Plays original or processed with one shared position (an A/B switch continues at the same moment): the range and time text follow playback and can be dragged to seek; "Pausa" stops and keeps the position, "Parar" stops and returns to 0. "Descargar WAV" builds the WAV of the processed signal at click time and downloads it as `<name>-procesado.wav`. |
-| `web/i18n.js` | ui (texts) | Spanish texts (including the WAV download button and file-name suffix) and `t(key)`. |
+| `web/index.html` | ui | One-column page for phones (no horizontal scroll down to 320 px): file input, summaries, the waveform box (two rows, original in grey and processed in blue, each with a canvas and a name, and one playhead over both; the row of the playing sound glows), a position range with its clock text, and the buttons (play original, play processed, pause, stop, download WAV); loads `ui/app.js` as a module. Contains no visible text. |
+| `web/ui/app.js` | ui | Page controller. Reads the chosen file, calls `decodeAudioFile`, shows name, duration, channels and sample rate, or an error text. Plays original or processed with one shared position (an A/B switch continues at the same moment): the range, the playhead and the clock follow playback, and the waveform row of the playing sound glows (via `createWaveformRows`; no row glows when paused, stopped or ended); the range release and a click or tap anywhere in the waveform box both seek (`seekTo`; a click, not pointerdown, so scrolling by swipe does not seek), and a playing sound continues from there; "Pausa" stops and keeps the position, "Parar" stops and returns to 0. "Descargar WAV" hands the processed signal to `downloadWav`. |
+| `web/ui/download.js` | ui | `downloadWav(samples, sampleRateHz, chosenFileName)`: builds the 16-bit WAV with `encodeWavMono16` at call time (not kept), and downloads it as `<name>-procesado.wav` through a temporary link; the object URL is revoked after 10 s. Moved out of `app.js` in F1.7. |
+| `web/ui/clock.js` | ui | `formatClock(elapsedSeconds, totalSeconds)`: "m:ss / −m:ss" (elapsed floored, remaining rounded up, minutes not capped, U+2212 minus). Pure: no DOM, no texts. |
+| `web/ui/summary.js` | ui | `formatDuration`, `formatHertz` and `showRows`: the file summaries, moved out of `app.js`. |
+| `web/i18n.js` | ui (texts) | Spanish texts (including the WAV download button, file-name suffix, the names and labels of the two waveform rows and the seek hint), `t(key)` and the frozen `TEXTS` object (exported for the language check). |
 | `web/io/wav.js` | io | `encodeWavMono16(samples, rate)`: mono 16-bit PCM WAV with the canonical 44-byte header, written by hand; `floatToInt16(sample)`: NaN → 0, clip, scale 32767, round. Pure: no DOM, no Web Audio. |
 | `tests/io/wav.test.js` | tests | node:test tests for `wav.js`: byte-for-byte equality with the soundfile vectors, header fields, NaN / infinities / −0, invalid rates. |
 | `tests/ref/wav_ref.py` | tests (reference) | Generates `tests/ref/vectors/wav.json` with soundfile; `--check` regenerates in memory and compares with the committed file. |
@@ -69,8 +72,10 @@ or `ui`.
 | `tests/dsp/peak-normalize.test.js` | tests | node:test tests for `normalizePeak` (known values within 1e-7, negative peak, above full scale, silence, empty, new object). |
 | `web/dsp/mono.js` | dsp | `mixToMono(channels)`: averages N channels into one new Float32Array. |
 | `web/io/resample.js` | io | `resampleTo48k(samples, rate)`: renders mono samples at 48 kHz in an OfflineAudioContext; returns them unchanged if already 48 kHz. |
-| `web/ui/waveform.js` | ui | `computeColumnPeaks` (pure min/max per column) and `drawWaveform` (draws them on a canvas, one line per device pixel column). |
-| `tests/ui/waveform.test.js` | tests | node:test tests for `computeColumnPeaks` (known split, more columns than samples, constant signal, odd split). |
+| `web/ui/waveform.js` | ui | `computeColumnPeaks` (pure min/max per column), `drawWaveform` (one signal on one canvas, scale ±1, one line per device pixel column), `createWaveformRows` (wires the box with the two rows: sets their names, labels and the seek hint from i18n; returns `draw`, `clear`, `setActive` for the glow of the playing row, `placePlayhead` and `fractionAt`), `fractionFromPointer` (pure: pointer x → 0..1 along the box) and `placePlayhead` (moves the separate playhead element, so the canvases are not redrawn while playing). |
+| `tests/ui/waveform.test.js` | tests | node:test tests for `computeColumnPeaks` (known split, more columns than samples, constant signal, odd split) and `fractionFromPointer` (inside, left, right, width 0). |
+| `tests/ui/clock.test.js` | tests | node:test tests for `formatClock` (start, rounding in opposite directions, end, minutes above 59, negative and NaN elapsed, elapsed above total). |
+| `tests/ui/i18n.test.js` | tests | Language check of the CI: same keys in every language, every key used in `web/ui/*.js` exists, no visible text in `index.html`, no `i18n.js` import in `web/dsp/` or `web/io/`. |
 | `tests/dsp/mono.test.js` | tests | node:test tests for `mixToMono` (stereo average, copy not alias, length, N channels, errors). |
 | `docs/style.md` | docs | Code style rules. |
 | `docs/arquitectura.md` | docs | This file. |
