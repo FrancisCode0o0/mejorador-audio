@@ -84,7 +84,8 @@ or `ui`.
 | `tools/check_secrets.py` | tools | Secret checker: refuses a commit whose added lines contain a known key format or the value of an exported secret variable. |
 | `tools/tests/test_check_secrets.py` | tools (tests) | pytest tests for the secret checker and the pre-commit hook; fake keys are built at runtime. |
 | `.githooks/pre-commit` | tools (git hook) | Runs `tools/check_secrets.py --staged` before each commit; refuses the commit if no Python is found. |
-| `.github/workflows/pages.yml` | CI | Publishes the `web/` folder to GitHub Pages on every push to `main`. |
+| `.githooks/pre-push` | tools (git hook) | Refuses a push unless `npm test`, Prettier, ESLint and, once `tests/browser/` exists, the Chromium smoke test pass. Fails closed. |
+| `.github/workflows/pages.yml` | CI | Publishes the `web/` folder to GitHub Pages after the CI workflow finished successfully for a push to `main` (`workflow_run`); a red push is not deployed. |
 | `.github/workflows/ci.yml` | CI | On every push: JS tests (node:test), Prettier and ESLint; ruff check and ruff format; `check_secrets.py --all`; pytest for `tools/`; `tests/ref/wav_ref.py --check` (reference vectors still match soundfile). Tool and reference-library versions pinned. |
 | `package.json`, `package-lock.json` | CI (tools) | Development tools only (Prettier, ESLint), pinned; scripts `test`, `format:check`, `lint`. Nothing from npm is used in `web/`. |
 | `.prettierrc.json` | CI (tools) | Prettier settings: 100 columns. |

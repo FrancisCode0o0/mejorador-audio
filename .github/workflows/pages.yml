@@ -1,8 +1,12 @@
-# Publishes the web/ folder to GitHub Pages on every push to main.
+# Publishes the web/ folder to GitHub Pages, but only after the CI workflow
+# (ci.yml) has finished successfully for a push to main: a red push never
+# reaches Pages. Plan: DECISIONES "Pasada de Fable" (2026-11-15).
 name: Deploy web/ to GitHub Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -17,12 +21,21 @@ concurrency:
 
 jobs:
   deploy:
+    # workflow_run also fires for failed runs and for pull requests from
+    # branches named main in forks: deploy only a green push to this repo.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The commit the CI checked, not whatever main points to by now.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

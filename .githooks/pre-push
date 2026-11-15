@@ -1,0 +1,26 @@
+#!/bin/sh
+# Git pre-push hook: refuse the push unless the JS tests, the formatter, the
+# linter and, once tests/browser/ exists, the Chromium smoke test pass.
+# Plan: DECISIONES "Pasada de Fable" (2026-11-15): no push with red tests.
+#
+# Active through core.hooksPath = .githooks (set once per clone, see
+# pre-commit). Fails closed: a check that cannot run refuses the push.
+
+repo_root=$(git rev-parse --show-toplevel) || exit 2
+cd "$repo_root" || exit 2
+
+run_check() {
+    echo "pre-push: $*"
+    if ! "$@"; then
+        echo "pre-push: FAILED: $* -> push refused." >&2
+        exit 1
+    fi
+}
+
+run_check npm test --silent
+run_check npm run --silent format:check
+run_check npm run --silent lint
+if [ -d tests/browser ]; then
+    run_check npx playwright test --project=chromium
+fi
+echo "pre-push: OK"

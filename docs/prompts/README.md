@@ -13,6 +13,11 @@ Autor des Projekts: Francis García Reyes (GitHub: FrancisCode0o0).
   prüft jede Datei, führt die Tests aus und kontrolliert jeden Push.
 - **Fran** gibt die Schritte frei und testet die App im Browser.
 
+Ab dem 15.11.2026 (siehe `34-schneller-mit-fable.md`): **Claude Fable**
+baut den Rest der App in Blöcken, ohne Einzelfreigaben; jeder Commit nur
+mit bestandenen Tests, feste Sperren bleiben. Danach prüfen andere
+Modelle; Fran testet mit echten Aufnahmen.
+
 Die Prompts gingen auf Englisch an Claude Code, weil Code, Kommentare und
 technische Dokumente auf Englisch sind (`docs/style.md`). Hier stehen sie
 sinngemäß auf Deutsch. Code-Namen bleiben unverändert.
@@ -71,3 +76,4 @@ Arbeitsweise, Werkzeuge und Organisation.
 | 29 | `29-markierte-dateien.md` | Sind 2727 markierte Dateien schlecht? | — |
 | 30 | `30-werkzeuge-dokumentieren.md` | Kursanforderung: Werkzeuge, Modelle, Harness dokumentieren | — |
 | 31 | `31-chats-durchsuchen.md` | Alte Chats nach wichtigen Prompts durchsuchen | — |
+| 34 | `34-schneller-mit-fable.md` | Schneller bauen mit Fable; Querprüfung; Training in Colab | — |
